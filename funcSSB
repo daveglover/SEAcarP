@@ -1,0 +1,24 @@
+##Jahn Kallis
+## Spawning stock biomass by pool
+## Product of population matrix, probability mature by size, biomass by size, 
+## and the reproductive id matrix...summed across all sizes.
+funcSSB <- function(NNnn, MATMAT, lmidlmid, LWLW, RIDMRIDM) 
+{
+MATMAT <- as.numeric(MATMAT)
+LWLW <- as.numeric(LWLW)
+SSBSSB <- colSums(NNnn * 
+  exp(MATMAT[2]*lmidlmid + MATMAT[1]) / (1+(exp(MATMAT[2]*lmidlmid+ MATMAT[1]))) * # pr(mature)
+  exp(log(lmidlmid) * LWLW[2] + LWLW[1]) * # Weight at length
+  RIDMRIDM) # Reproductive ID matrix
+return(SSBSSB)
+}
+
+#NNnn <- N[,,(y-1),i]
+#MATMAT= MAT[s[p],1:2]
+#lmidlmid <- funcBins.out$lmid
+#LWLW <- LW[c[p],1:2]
+#RIDMRIDM <- RIDM
+#MATMAT <- c(-13.595, 0.01727845)
+#LWLW <- c(-11.01003, 2.926071)
+
+
