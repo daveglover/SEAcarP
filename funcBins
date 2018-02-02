@@ -1,0 +1,12 @@
+#Jahn Kallis
+##9/9/2015
+
+funcBins <- function(min.sz, max.sz, bin.sz) 
+{
+lmid <- seq(min.sz+(bin.sz/2),max.sz-(bin.sz/2),by=bin.sz) # Mid-points of the length bins
+bins <- seq(min.sz, max.sz, by=bin.sz) # Grouping bins
+out.list <- list("lmid" = lmid, "bins" = bins) # List...easy way to return two objects from function
+return(out.list)
+}
+
+
