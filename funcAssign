@@ -1,0 +1,29 @@
+##Jahn Kallis
+##7/28/16
+# Assign recruits to length classes
+# Draw a random row from the VonB posterior and calculate length at age zero
+# Determine which length bin the size is associated with using hist
+# Create an ID matrix of diminsions pools by sizes
+
+funcAssign <- function(size, SS, PP, binsbins) 
+{
+  if (size < min(binsbins)) size <- min(binsbins) # Constraint...size must be larger than first size class
+  temp = hist(size, breaks=binsbins,plot=F)
+  assignments <- matrix(temp$counts,SS,PP)
+  return(assignments)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
