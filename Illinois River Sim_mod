@@ -1,0 +1,189 @@
+  options(scipen=999)
+
+  # Specify constants----
+  P <- 6 # Number of pools (or discrete locations) to model separately
+  POOLSZ <- c(80, 77, 74, 14, 26, 15, 5) # Recruitment scaled by pool size. Left to right - Alton, La Grange, Peoria, Starved Rock, Marseilles, Dresden, and Brandon Road (river miles)
+  Y <- 25 # Number of years
+  I <- 1000 # Number of iterations
+  min.sz <- 0 # Min size (mm TL)
+  max.sz <- 1200 # Max size (mm TL)
+  bin.sz <- 10 # Size class interval (mm)
+  setwd("C:/Users/dglover/Documents/Glover/Population models/Illinois River/Simulation") # set working directory
+  species = 2
+  d=1
+  #for (species in 1:2){ # 1 = BHCP, 2 = SVCP
+      if (species==1){SPP <- "BHCP"} else # Determine species to use for loading parameters
+          {SPP <- "SVCP"}
+      #for (d in 1:10){
+          # specify directory and filename for workspace image to save
+          #mypath = "C:/Users/dglover/Documents/Glover/Population models/Illinois River/Simulation/results/Results with harvest included/Scenarios with recruitment at pools 1,2,3/"
+          #image_id = paste(SPP, "_harvest_only",  sep = "")
+          #image_id = paste(SPP, "_M_deter_", d*10, sep = "")
+          # Load functions----
+          source('funcLoad.R')
+          source('funcBins.R')
+          #source('funcGrowth.R') # no need for this function given that growth transition matrix incorporates invidual variability in growth
+          source('funcMove.R')
+          source('funcSnot.R')
+          source('funcSSB.R')
+          source('funcRenewal.R')
+          source('funcAssign.R')
+      
+          # Load scenarios and species-specific parameters----
+          SCN <- read.csv(paste("scenarios_",d*10,".csv", sep = "")) # Load scenarios
+          #SCN <- read.csv(paste("scenarios",".csv", sep = "")) # Load scenarios
+          H <- nrow(SCN) # Determine number of scenarios to run
+        
+          funcLoad.out <- funcLoad(SPP, Y, I) 
+          LW <- funcLoad.out$LW # Condition - length/weight
+          MAT <- funcLoad.out$MAT # Maturity
+          VB <- funcLoad.out$VB # VB - growth (USED FOR NATURAL MORTALITY ESTIMATE)
+          PSI <- funcLoad.out$PSI # Movement
+          p <- funcLoad.out$P # Random number for periodic recruitment
+          
+          # Specify length class bins----
+          S <- ((max.sz-min.sz)/bin.sz) 
+          if ((S - round(S,0))^2 > 0) {funcBins.out=NA; print("ERROR - S must be an integer. Change min/max size")} else
+              {funcBins.out <- funcBins(min.sz, max.sz, bin.sz)}
+          
+          # Recruitment dynamics----
+          R0 <- 1 # Recruitment at S0
+          funcSnot.out <- funcSnot(R0, funcBins.out$lmid) # Calculate S0 and mean biomass by length class and initial population
+          S0 <- funcSnot.out$Snot[which(funcSnot.out$Snot[,1]==SPP), 2]
+          IP.save <- as.matrix(funcSnot.out$IP[which(funcSnot.out$IP[,7]==SPP), 1:P]) # Initial population
+          # Pool-specefic recruitment (true/false)----
+          POOLSZ <- POOLSZ/max(POOLSZ) #Recalculate pool size a proportion of maximum
+          RIDM <- matrix(nrow=S, ncol=P, POOLSZ[1:P], byrow=TRUE) # Reproduction identity matrix (specify where reproduction is possible).
+          RIDM[,4:P] <- 0 
+          # Size-dependent vulnerability to fishing (true/false)----
+          V <- 500
+          SV <- rep(0, S)
+          SV[which(funcBins.out$lmid > (V - bin.sz/2))] = 1 # Vulnerability to fishing by size (SV=size vulnerability)
+          remove(funcLoad.out)
+          
+          # Run model----
+          mc <- 3 # Meta-data columns (iteration, year, pool, etc)
+          N <- matrix(NA, nrow=I*(Y+1)*P, ncol=mc+H) # Holding matrix...final data table
+          N_harvest <- matrix(NA, nrow=I*(Y+1)*P, ncol=mc+H)  # Holding matrix...final data table
+          B_harvest <- matrix(NA, nrow=I*(Y+1)*P, ncol=mc+H)  # Holding matrix...final data table
+          
+          for (h in 1:H){  # Loop through scenarios 
+              ir<-1; fr=6; # Initial and final row counters
+              for (i in 1:I){ # Loop through iterations for a given scenario h i=1
+                  IP <- IP.save
+                  m=1+(i-1)*Y # Counter for annual recruitment and stochastic movement
+                  # Set natural and fishing mortality)----
+                  FM <- matrix(nrow=S, ncol=P, data=as.numeric(SCN[h, 4:9]), byrow=TRUE) # Fishing mortality matrix
+                  FS <- (1 - SV * FM) # Survival after accounting for fishing mortality only
+                  NS <- exp(-(1.5*VB[i,3])) # Survival after accounting for natural mortality only
+                  ZZ <- NS * FS # Survival after accounting for natural and fishing mortality
+                  
+                  # Populate final table N with intial population data----
+                  N[ir:fr, 1] <- rep(i,P) #iteration
+                  N[ir:fr, 2] <- rep(0, P) #year
+                  N[ir:fr, 3] <- seq(1:6) #pool
+                  N[ir:fr, mc+h] <- colSums(IP) #data    
+                  
+                  N_harvest[ir:fr, 1] <- rep(i,P) #iteration
+                  N_harvest[ir:fr, 2] <- rep(0, P) #year
+                  N_harvest[ir:fr, 3] <- seq(1:6) #pool
+                  N_harvest[ir:fr, mc+h] <- colSums(IP)*0 #data    
+                  
+                  B_harvest[ir:fr, 1] <- rep(i,P) #iteration
+                  B_harvest[ir:fr, 2] <- rep(0, P) #year
+                  B_harvest[ir:fr, 3] <- seq(1:6) #pool
+                  B_harvest[ir:fr, mc+h] <- colSums(IP)*0 #data    
+                  
+                  ir<-ir+P; fr<-fr+P #Update row counters
+                      # Begin looping through years for iteration i----
+                      for (y in 1:Y){ # Loop through years y=1
+                          # Move
+                          MM <- funcMove(PSI[m,], P, SCN[h, 10:14])
+                          # Recruit----
+                          SSB <- funcSSB(IP, MAT[i,1:2], funcBins.out$lmid, LW[i,1:2], RIDM) # SSB by pool (RIDM scales by pool size)
+                          RR <- funcRenewal(SCN[h,3], SSB, S0, R0, SCN[h,2]) ## S/R function... number of recruits for each pool
+                          BB <- RR %*% t(GG[,1])
+                          #BB <- t(RR*t(funcAssign(Age0sz, S, P, funcBins.out$bins))) # Assign recruits to a given size class
+                          BB <- t(BB) * p[m] # Periodic recruitment
+                          
+                          m <- m+1 # Update counter
+                          # Grow, survive/die, move, reproduce---- (ACTUALLY REPRODUCE, GROW, SURV/DIE, MOVE)
+                          temp <- t(IP) %*% t(GG)
+                          tempharvN <- t(temp) * (1-FS)
+                          tempharvB <- tempharvN * exp(log(funcBins.out$lmid) * LW[i,2] + LW[i,1])
+                          temp <- t(temp) * ZZ
+                          temp <- temp %*% MM; temp <- temp %*% MM; temp <- temp %*% MM; temp <- temp %*% MM; temp <- temp %*% MM; temp <- temp %*% MM
+                          temp <- temp %*% MM; temp <- temp %*% MM; temp <- temp %*% MM; temp <- temp %*% MM; temp <- temp %*% MM; temp <- temp %*% MM
+                          temp <- temp + BB
+                          UP <- temp # Update population
+                          IP <- temp # Update initial population
+                          
+                          # Populate final table N----
+                          N[ir:fr, 1] <- rep(i,P) #iteration
+                          N[ir:fr, 2] <- rep(y, P) #year
+                          N[ir:fr, 3] <- seq(1:6) #pool
+                          N[ir:fr, mc+h] <- colSums(UP) #data
+                          # Populate final table Number harvested
+                          N_harvest[ir:fr, 1] <- rep(i,P) #iteration
+                          N_harvest[ir:fr, 2] <- rep(y, P) #year
+                          N_harvest[ir:fr, 3] <- seq(1:6) #pool
+                          N_harvest[ir:fr, mc+h] <- colSums(tempharvN) #data
+                          # Populate final table Biomass harvested
+                          B_harvest[ir:fr, 1] <- rep(i,P) #iteration
+                          B_harvest[ir:fr, 2] <- rep(y, P) #year
+                          B_harvest[ir:fr, 3] <- seq(1:6) #pool
+                          B_harvest[ir:fr, mc+h] <- colSums(tempharvB) #data
+                          ir<-ir+P; fr<-fr+P # Update row counters
+                      } #year
+                      print(m)
+                  } #iteration
+                  print(h)
+              } #scenario
+          #Add column names and save file
+          N = data.frame(N)
+          names(N)[1:mc] <- c("iter", "year", "pool")
+          names(N)[(mc+1):ncol(N)] = c(paste(rep("S", ncol(N)-mc), seq(1:(ncol(N)-mc)),  sep=""))
+          
+          N_harvest = data.frame(N_harvest)
+          names(N_harvest)[1:mc] <- c("iter", "year", "pool")
+          names(N_harvest)[(mc+1):ncol(N_harvest)] = c(paste(rep("S", ncol(N_harvest)-mc), seq(1:(ncol(N_harvest)-mc)),  sep=""))
+          
+          B_harvest = data.frame(B_harvest)
+          names(B_harvest)[1:mc] <- c("iter", "year", "pool")
+          names(B_harvest)[(mc+1):ncol(B_harvest)] = c(paste(rep("S", ncol(B_harvest)-mc), seq(1:(ncol(B_harvest)-mc)),  sep=""))
+          
+          sub.data.Dresden <- N[which(N[,3]==6 & N[,2]==25), ] #subset Dresden at year 25
+          #sub.data.Marseilles <- N[which(N[,3]==5 & N[,2]==25), ] #subset Marseilles at year 25
+          #sub.data.StarvedRock <- N[which(N[,3]==4 & N[,2]==25), ] #subset Starved Rock at year 25
+          #sub.data.Peoria <- N[which(N[,3]==3 & N[,2]==25), ] #subset Peoria at year 25
+          #sub.data.Lagrange <- N[which(N[,3]==2 & N[,2]==25), ] #subset Lagrange at year 25
+          #sub.data.Alton <- N[which(N[,3]==1 & N[,2]==25), ] #subset Alton at year 25
+          
+          #Relativize by the no-fishing baseline conditions
+          rN=sub.data.Dresden
+          rN[, 4:ncol(rN)] <- 100*(1-(rN[, 4:ncol(rN)]/rN[ ,4]))
+          
+          SIMS_LT_90= colSums(rN[, 4:ncol(rN)]<95)
+          SIMS_LT_90
+          
+          #save.image(file = paste(mypath, image_id, ".RData", sep=""))
+       #}
+   # }
+    # rm(list = ls())
+    # d = 9
+    # mypath = "C:/Users/dglover/Documents/Glover/Population models/Illinois River/Simulation/results/Results with harvest included/Scenarios with recruitment at pools 1,2,3/"
+    # #load(paste(mypath, "BHCP_harvest_only.RData", sep = ""), .GlobalEnv)
+    # load(paste(mypath, "BHCP_SR_deter_", d * 10, ".RData", sep = ""), .GlobalEnv)
+    # SIMS_LT_90
+
+
+  firsttoplot = 2
+  start1 <- firsttoplot+3
+  end1 <- start1+9
+  boxplot(rN[,start1:end1], use.cols = TRUE, main = paste("Scenarios", firsttoplot, "through", end1-3, sep = " "), horizontal = FALSE)
+  #boxplot(VB$mu.K)
+  
+  # sub.data.Dresden <- N[which(N[,3]==6 & N[,2]==25), ] #subset Dresden at year 25
+  # X = (-1*MAT$rawintercept/MAT$rawslope)
+   # plot(rN[,8]~exp(-(1.5*VB[,3])))
+  
