@@ -1,0 +1,42 @@
+# Rearrange the i'th row of PSI values from the movement model into a transition matrix AND implement "barrier effects"
+## Barrier effects are proportional reductions in movement at a given dam
+
+funcMove <- function(PSIpsi, Pp, SCNscn)
+{
+
+#########################-
+# Create transition matrix
+#########################-
+  PSIpsi <- as.numeric(PSIpsi)
+  SCNscn <- as.numeric(SCNscn)
+  a <- seq(1,Pp^2, by=Pp+1) #diagonal index numbers
+  b <- which(seq(1,Pp^2, by=1) != a) #off diagonal index numbers
+  MMmm <- matrix(NA,Pp,Pp) #Holding matrix
+  MMmm[b] <-  PSIpsi
+  MMmm <- t(MMmm)
+  MMmm[a] <- 1-rowSums(MMmm, na.rm=T)
+
+#########################-
+# Barrier effect implemented sequentially starting with the first/lowest barrier working upstream. Barrier values
+## in the scenario table indicate proportional reduction in movement (e.g., value of 1 indicates no reduction; 0.5
+### represents a 50% reduction)
+#########################-
+MMmm.x <- MMmm
+MMmm.x[1, 2:Pp] <- MMmm.x[1, 2:Pp] * SCNscn[1] #Overwrite upstream movment values (lowest pool)
+diff <- MMmm[1, 2:Pp] - MMmm.x[1, 2:Pp] # Difference: normal movement less reduced movement
+MMmm.x[1,1] <-  MMmm.x[1,1] + sum(diff) # Update transition matrix...add difference to appropriate pool(s)
+    
+  for (ii in 3:(Pp-1)){
+  MMmm.z <- MMmm.x
+  MMmm.x[1:(ii-1), ii:Pp] <- MMmm.z[1:(ii-1), ii:Pp] * SCNscn[ii-1] #Overwrite
+  diff <- MMmm.z[1:(ii-1), ii:Pp] - MMmm.x[1:(ii-1), ii:Pp] # Difference
+  MMmm.x[1:(ii-1), (ii-1)] <- MMmm.x[1:(ii-1), (ii-1)] + rowSums(diff) # Update
+  }
+
+MMmm.z <- MMmm.x
+MMmm.x[1:(Pp-1), Pp] <- MMmm.z[1:(Pp-1), Pp] * SCNscn[Pp-1] #Overwrite 
+diff <- MMmm.z[1:(Pp-1), Pp] - MMmm.x[1:(Pp-1), Pp] # Difference
+MMmm.x[1:(Pp-1), (Pp-1)] <- MMmm.x[1:(Pp-1), (Pp-1)] + diff #Update
+
+  return(MMmm.x)
+}
