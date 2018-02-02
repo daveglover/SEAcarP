@@ -1,0 +1,24 @@
+##Jahn Kallis
+##6/28/16
+# Estimate recruitment using Beverton-Holt and Ricker stock-recruit functions
+# Recruitment is estimated as a function of steepness (h), number/biomass of spawners (S),
+# carrying capacity (S0), and recruitment at carrying capacity (R0)
+funcRenewal <- function(HH, SSss, S0S0, R0R0, form) 
+{
+SSss[which(SSss>S0S0)] = S0S0 #Constrain SSB fed to the S/R function to S0
+BH <- (SSss/S0S0 / (1 - (5*HH-1)/(4*HH) * (1-(SSss/S0S0)))) * R0R0
+RR <- (SSss/(S0S0/R0R0)) * ((5*HH)^(5/4))^(1-SSss/S0S0) 
+#rBH <- BH/R0; rSS <- SS/S0 
+#plot(rBH ~ rSS)  
+  if(form==1 & HH>=1) {BH[1:length(BH)] = 0}
+  if(form==1) {Recruitment = BH} else {Recruitment = RR}  
+  return(Recruitment)
+}
+#HH=0.5; S0S0=S0; R0R0=1
+#SSss = SSB
+#plot(RR~SSss)
+#plot(BH~SSss)
+
+#points(RR~SSss, col="red")
+#points(BH~SSss, col="blue")
+#SSss <- seq(0,S0,length=10)
