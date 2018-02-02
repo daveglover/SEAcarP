@@ -1,0 +1,184 @@
+# rm(list=ls())
+
+#### Load libraries
+library(MCMCpack) # rwish function
+library(R2jags)
+
+
+# Read in data
+dat<-read.csv("T:/Projects/Asian.Carp.Model.v2/Data files/Individual_fish_data/Demographics.csv",
+              na.strings="NA", header=T)
+head(dat)
+dim(dat)
+
+# Add a month column
+dat$Month = as.numeric(format(as.Date(dat$Sampdate, format="%Y-%m-%d"), "%m"))
+
+# Subset by species
+dat <- subset(dat, Species=="SVCP") # | Species=="HYCP")
+
+# Estimate tTL for tFL measured fish
+plot(TL~FL, data=dat)
+lm1 <- lm(TL~FL, data=dat) #Fit a linear model
+r <- which(is.na(dat$TL) & !is.na(dat$FL)) #Index fish missing TL but having FL
+dat$TL[r] <- lm1$coefficients[2]*dat$FL[r] + lm1$coefficients[1]
+
+# Bookeeping 
+dat <- dat[!is.na(dat$Age) & !is.na(dat$TL),] # Remove fish with missing ages and TL's
+dat$Age=floor(dat$Age)##Change Ages into integer
+dat$Age= dat$Age+(dat$Month-5)/12 ##Adjust age to account for sample date 
+
+# Drop pools
+dat = subset(dat, Pool!="Peoria") # Data poor on t0
+dat = subset(dat, Pool!="Marseilles") # Data poor on Linf
+dat = subset(dat, Pool!="Starved Rock")
+dat$Pool = factor(dat$Pool)
+unique(dat$Pool)
+
+# Make sure pool ID's begin at 1 and increase by intervals of 1
+unique(dat$Pool); unique(dat$PoolID)
+as.numeric(unique(dat$Pool))
+dat$PoolID = as.numeric(dat$Pool)
+unique(dat$PoolID)
+dat <- dat[order(dat$PoolID),]; unique(dat$PoolID); unique(dat$Pool)
+
+
+# By Pool
+plot(TL ~ Age, data=dat, xlab='Age (yrs)', ylab='Length (mm)', type="n", xlim=c(0,20), ylim=c(0,max(dat$TL)))
+points(TL[which(dat$Pool=="Peoria")] ~ Age[which(dat$Pool=="Peoria")], data=dat, col=1, pch=1)
+points(TL[which(dat$Pool=="Alton")] ~ Age[which(dat$Pool=="Alton")], data=dat, col=2, pch=1)
+points(TL[which(dat$Pool=="LaGrange")] ~ Age[which(dat$Pool=="LaGrange")], data=dat, col=3, pch=1)
+points(TL[which(dat$Pool=="Starved Rock")] ~ Age[which(dat$Pool=="Starved Rock")], data=dat, col=4, pch=1)
+points(TL[which(dat$Pool=="Pool 27")] ~ Age[which(dat$Pool=="Pool 27")], data=dat, col=5, pch=1)
+points(TL[which(dat$Pool=="Pool 26")] ~ Age[which(dat$Pool=="Pool 26")], data=dat, col=6, pch=1)
+points(TL[which(dat$Pool=="Marseilles")] ~ Age[which(dat$Pool=="Marseilles")], data=dat, col=7, pch=1)
+
+
+
+################## Jags model ##################----
+sink("vonBmodel.txt")
+cat("
+    model{
+    for(i in 1:n){
+    y[i] ~ dnorm(y.hat[i], tau.y)
+    y.hat[i] <- Linf[g[i]] * (1-exp(-k[g[i]] * (age[i] - t0[g[i]] )))
+    }
+    
+    tau.y <- pow(sigma.y,-2)
+    sigma.y ~ dunif(0,100)
+
+# Parameters modeled on log-scale
+for(j in 1:J){
+  Linf[j] <- exp(BB[j,1])
+	k[j] <- exp(BB[j,2])
+	t0[j] <- exp(BB[j,3])-10 # Ten is added (subtracted) to t0 to ensure that neg. values are possible, b/c t0 is estimated on log-scale
+	BB[j,1:K] ~ dmnorm (BB.hat[j,], Tau.B[,]) # Multivariate normal dist'n;  Tau.B is a precision 
+	BB.hat[j,1] <- mu.Linf
+	BB.hat[j,2] <- mu.k
+	BB.hat[j,3] <- mu.t0
+}
+
+  # Priors for population-average parameters
+  mu.Linf ~ dnorm(0,.0001) #T(,max.TL)
+  mu.k ~ dnorm(0,.0001)
+  mu.t0 ~ dnorm(0,.0001)
+
+# Model variance-covariance
+  Tau.B[1:K,1:K] ~ dwish(W[,], df)
+  df <- K+1
+  Sigma.B[1:K,1:K] <- inverse(Tau.B[,])
+  for (k in 1:K){
+    for (k.prime in 1:K){
+      rho.B[k,k.prime] <- Sigma.B[k,k.prime]/
+        sqrt(Sigma.B[k,k]*Sigma.B[k.prime,k.prime])
+    }
+    sigma.B[k] <- sqrt(Sigma.B[k,k])
+  }
+} # end model
+    ",fill=TRUE)
+sink()
+
+# Jags arguments----
+J <-length(unique(dat$Pool)) # Number of sites
+K <- 3 # Number of varying parameters to estimate (K)
+W <- diag(3)
+y <- dat$TL
+age = dat$Age
+g = as.numeric(dat$Pool)
+n = dim(dat)[1]
+Tau.B1 <- rwish(K+1,diag(K)) # Id matrix for Wishart dist'n; jags did not like orig. name; rename to Tau.B1, not Tau.B)
+
+
+
+# Set prior on t0
+#http://www.fishbase.org/PopDyn/PopGrowthList.php?ID=275&GenusName=Hypophthalmichthys&SpeciesName=nobilis&fc=122
+#mean.tnot = c(0.32, -0.06, 0.01, -0.25, 0.19) # t0's from fishbase Bighead
+mean.tnot = c(-0.24, 0.24, -0.1, -0.14, -0.03) # t0's from fishbase Silver
+mu.mean.tnot = mean(mean.tnot) + 10 #Mean of the mean t0's
+sigma.mean.tnot = sd(mean.tnot)/sqrt(length(mean.tnot)) #Standard deviation sigma.mean.tnot = sd(tnot)/sqrt(length(mean.tnot)) #Standard error
+
+mean.Linf = c(1001, 1298, 1360, 1393, 1530)
+mu.mean.Linf = mean(mean.Linf)
+sigma.mean.Linf = sd(mean.Linf)/sqrt(length(mean.Linf))
+
+
+mean.k = c(0.27, 0.16, 0.15, 0.17, 0.14)
+mu.mean.k= mean(mean.k)
+sigma.mean.k = sd(mean.k)/sqrt(length(mean.k))
+
+
+# Load data
+data <- list('y', 'age', 'g', 'n', 'J', 'W', 'K','Tau.B1')#, 'mu.mean.tnot', 'sigma.mean.tnot')#, 'mu.mean.Linf', 'sigma.mean.Linf',
+             #'mu.mean.k', 'sigma.mean.k')
+
+
+# Initial values
+inits <- function(){list(mu.Linf = rnorm(1,3,0.001), mu.k = rnorm(1,1,0.001), mu.t0 = rnorm(1,0.7,0.001),
+                         sigma.y = runif(1,1,10), 
+                         BB=array(c(rep(log(900) +rnorm(1,0.01,0.01),J), #Linf
+                                    rep(log(0.4)+rnorm(1,0.001,0.1),J), #K
+                                    rep(log(0.5+10)+rnorm(1,0.01,0.1),J)), #t.not
+                                  c(J,K)), Tau.B=Tau.B1 ) }
+
+# Parameters monitored
+parameters <- c("mu.Linf", "mu.k", "mu.t0", "sigma.y","BB","Sigma.B","rho.B")
+
+# Call JAGS from R
+out <- jags.parallel(data, inits = inits, parameters.to.save = parameters, model.file = "vonBmodel.txt", n.chains = 3,  
+                      n.thin = 3, n.iter = 500000, n.burnin = 200000)
+
+# Summarize the result
+print(out, digits = 2)
+
+# Diagnostics
+geweke.diag(out)
+heidel.diag(as.mcmc(out))
+raftery.diag(as.mcmc(out))
+# Find which parameters, if any, have Rhat > 1.1
+which(out$BUGSoutput$summary[, c("Rhat")] > 1.1)
+mcmcplot(out)# dir=getwd())
+
+
+# Save the posterior distribution----
+mcmc.list.out <- as.mcmc(out) #Convert out1 (rjags object) into an object of class mcmc.list
+mcmc.out <- data.frame(as.matrix(mcmc.list.out, chains=F))# Convert object of class mcmc.list to class matrix
+
+parameters <- cbind(mcmc.out$mu.Linf, mcmc.out$mu.k, mcmc.out$mu.t0)
+parameters <- data.frame(parameters); names(parameters) = c("mu.Linf", "mu.k", "mu.t0")
+parameters <- exp(parameters)
+parameters[,3] <- parameters[,3] - 10
+
+#Write to file
+write.csv(parameters, file="T:/Projects/Asian.Carp.Model.v2/VonBertalanffy/POSTERIOR_VB_SVCP.csv")
+
+x=parameters$mu.t0
+quantile(x, probs = c(0.05, 0.5, 0.95))
+mean(x); sd(x)
+
+
+
+
+
+
+
+
