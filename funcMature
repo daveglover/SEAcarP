@@ -1,0 +1,8 @@
+
+
+funcMature <- function(lmidlmid, MATMAT){
+  MATMAT <- as.numeric(MATMAT)
+  pr.mature <- exp(MATMAT[2]*lmidlmid + MATMAT[1]) / (1+(exp(MATMAT[2]*lmidlmid+ MATMAT[1])))
+  out <- pr.mature
+  return(out)
+}
