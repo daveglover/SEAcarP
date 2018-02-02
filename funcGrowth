@@ -1,0 +1,39 @@
+#Jahn Kallis
+##9/9/2015
+
+#Growth function
+## Returns a transition matrix of 0's and 1's indicating growth from one size class to another.  
+## The gernal approach is similar to that of  Sullivan et al. (1990).
+
+### FUNCTION INPUTS ###
+# vonb refers to a set of von bertalanffy growth parameters (randomly drawn in the simulation)
+### bins...actual values for the bins (output of funcBins.r)
+### lmids...midpoint values of the length bins (output of funcBins.r)
+
+
+funcGrowth <- function(bins, lmid, vonb, max.length){
+  
+pr <- matrix(NA, nrow=length(lmid), ncol=length(lmid)) # Matrix...holds transition probabilities
+
+# Change in length (Equation 9 in Sullivan et al. (1990); (Linf - length.mid) * (1 - e^-k)
+dl <- (vonb[1] - lmid) * (1-exp(-vonb[2])) 
+dl[which(dl<0)] <- 0 # Constraint; Growth must be positive or zero (i.e., dl=0 when lmid>Linf)
+nl <- lmid + dl # New length
+nl[which(nl>=max.length)] <- max.length # Constraint; Fish never outgrow max size class
+  # Calculate transition probabilities
+  for (j in 1:length(lmid)){ # Loop through size classes
+  fug <- hist(nl[j], breaks=bins, plot=F) # Use hist for binning
+  pr[,j] <- fug$counts # Transition matrix
+  }
+pr = t(pr)
+
+Age0sz <- vonb[1] * (1-exp(-vonb[2]*(0-vonb[3]))) # Estimate length at age-0...for funcAssign
+
+out.list <- list("GGgg" = pr, "Age0sz" = Age0sz)
+return(out.list)
+}
+
+#bins=funcBins.out$bins
+#lmid=funcBins.out$lmid
+#vonb=as.numeric(VB[d,2:3])
+#max.length=max.sz
