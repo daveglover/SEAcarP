@@ -1,0 +1,40 @@
+funcLoad <- function(spp, Y, I){
+  if (spp=="BHCP") # Species-specific frequency of recruitment
+  {P <- 0.5 #0.4375
+  MAT <- read.csv('bhcp_mat.csv')
+  LW <- read.csv('bhcp_lw.csv')
+  VB <- read.csv('bhcp_vb.csv')
+  GG <- load("SVCP_GG.RData", .GlobalEnv) 
+  PSI <- read.csv('bhcp_psi.csv')} else
+  {P <- 0.5
+  MAT <- read.csv('svcp_mat.csv')
+  LW <- read.csv('svcp_lw.csv')
+  VB <- read.csv('svcp_vb.csv')
+  GG <- load("SVCP_GG.RData", .GlobalEnv) 
+  PSI <- read.csv('svcp_psi.csv')}
+  
+  ## Limit VB estiamtes to 98% credible interval for k and Linf
+  # k.upper.CIB <- quantile(VB$mu.k, probs=0.99)
+  # k.lower.CIB <- quantile(VB$mu.k, probs=0.01)
+  # VB <- VB[which((VB$mu.k<k.upper.CIB)&(VB$mu.k>k.lower.CIB)), ]  
+  # 
+  # Linf.upper.CIB <- quantile(VB$mu.Linf, probs=0.99)
+  # Linf.lower.CIB <- quantile(VB$mu.Linf, probs=0.01)
+  # VB <- VB[which((VB$mu.Linf<Linf.upper.CIB)&(VB$mu.Linf>Linf.lower.CIB)), ]
+  
+  # Randomly select rows from posteriors
+  set.seed(17); p <- rbinom((Y*I), 1, P) ## random number for periodic recruitment
+  set.seed(19); q <- sample(1:nrow(PSI), (Y*I)) ## random number for movement
+  set.seed(11); r <- sample(1:nrow(VB), (I)) ## random number for growth/mortality/age-0 assignments
+  set.seed(16); s <- sample(1:nrow(MAT), (I)) ## random number for maturity
+  set.seed(96); t <- sample(1:nrow(LW), (I)) ## random number for length-weight
+  
+  PSI <- PSI[q,]
+  VB <- VB[r,]
+  MAT <- MAT[s,]
+  LW <- LW[t,]
+
+  out <- list("MAT" = MAT, "PSI" = PSI, "LW" = LW, "VB" = VB, "GG" = GG, "P" = p)
+
+  return(out)
+}
