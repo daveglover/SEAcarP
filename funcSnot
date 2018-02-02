@@ -1,0 +1,135 @@
+
+funcSnot <- function(R0R0, midmid, SS, PP) 
+{
+rm <- c(80, 77, 74, 14, 26, 15) # Pool size from left to right - Alton, LG,...Lockport
+  
+#Holding matrix for S0's
+out <- data.frame(matrix(NA, 2, 2))
+out[,1] <- c("BHCP", "SVCP")
+
+
+
+
+########################-
+########################-
+########################-
+
+##Bighead carp
+# Von-b
+Linf = 1049.523; k=0.236; tnot=-1.083
+M = 1.5*k
+# Maturity
+m.slope = 0.01727845
+m.intercept = -13.595
+# Length-Weight
+lw.slope = 2.926071
+lw.intercept = -11.01003
+max.age = 11
+
+
+#Holding matrix for mean biomass at size
+out2 <- data.frame(matrix(NA, length(midmid), 3))
+out2[1:length(midmid), 1] <- "BHCP"
+out2[1:length(midmid), 2] <- midmid
+out2[1:length(midmid), 3] <- exp(log(midmid) * lw.slope + (lw.intercept))
+
+# Temporary holding matrix
+df <- data.frame(matrix(NA, nrow=(max.age+1), ncol=6))
+names(df) <- c("Age", "N", "L", "W", "PrM", "BM")
+
+df$Age = seq(0,max.age)
+df$N = R0R0*exp(-M*df$Age)
+df$L = Linf * (1-exp(-k * (df$Age - tnot)))
+df$W = exp(log(df$L) * lw.slope + lw.intercept)
+df$PrM = exp(m.slope*df$L+m.intercept) / (1+(exp(m.slope*df$L+m.intercept))) # Pr(mature)
+df$BM <- df$N * df$PrM * df$W
+out[1,2] <- sum(df$BM)
+
+# Create initial population matrix
+## Assume Alton is at equilibrium (i.e. S0)
+DEN.BHCP <- c(0.211, 0.136, 0.450, 0.386, 0.126, 0.028) #2015 BHCP densities per D.Coulter
+DEN.BHCP <- DEN.BHCP * rm #multiply densities by river mile
+
+t.hist <- hist(df$L, breaks=funcBins.out$bins, plot=F)
+df$lmid <- rep(t.hist$mids, t.hist$counts) # Assign age/length to a size class
+
+# Sum column N for each group of lmid, using data frame df, which returns the
+## number of of fish in each size class assuming stable age dist. and N = S0
+t.sum <- aggregate(N ~ lmid, df, sum)
+vec <- rep(0, length(funcBins.out$lmid))
+vec[which(t.hist$counts>0)] <- t.sum$N
+
+IP.BHCP <- data.frame(matrix(nrow=length(midmid), ncol=6, vec) * 
+            matrix(nrow=length(midmid), ncol=6, (DEN.BHCP/max(DEN.BHCP)), byrow=T))
+IP.BHCP$spp <- "BHCP"
+
+########################-
+########################-
+########################-
+
+# Von-b
+Linf = 940.0927; k=0.2933098; tnot=-0.7795644
+# Maturity
+m.slope = 0.01018011
+m.intercept = -5.122375
+# Length-Weight
+lw.slope = 2.977126
+lw.intercept = -11.26425
+max.age=11
+
+## Silver carp
+df <- data.frame(matrix(NA, nrow=(max.age+1), ncol=6))
+names(df) <- c("Age", "N", "L", "W", "PrM", "BM")
+
+df$Age = seq(0,max.age)
+df$N = R0R0*exp(-M*df$Age)
+df$L = Linf * (1-exp(-k * (df$Age - tnot)))
+df$W = exp(log(df$L) * lw.slope + lw.intercept)
+df$PrM = exp(m.slope*df$L+m.intercept) / (1+(exp(m.slope*df$L+m.intercept))) # Pr(mature)
+df$BM <- df$N * df$PrM * df$W
+out[2,2] <- sum(df$BM)
+
+
+
+# Create initial population matrix
+## Assume Alton is at equilibrium (i.e. S0)
+DEN.SVCP <- c(0.841, 0.890, 0.625, 0.481, 0.201, 0.014) #2015 SVCP densities per D.Coulter
+DEN.SVCP <- DEN.SVCP[1:6] * rm[1:6] #multiply densities by river mile
+
+#t.hist <- hist(df$L, breaks=funcBins.out$lmid, plot=T)
+t.hist <- hist(df$L, breaks=funcBins.out$bins, plot=F)
+df$lmid <- rep(t.hist$mids, t.hist$counts) # Assign age/length to a size class
+
+# Sum column N for each group of lmid, using data frame df, which returns the
+## number of of fish in each size class assuming stable age dist. and N = S0
+t.sum <- aggregate(N ~ lmid, df, sum)
+vec <- rep(0, length(funcBins.out$lmid))
+vec[which(t.hist$counts>0)] <- t.sum$N
+
+IP.SVCP <- data.frame(matrix(nrow=length(midmid), ncol=6, vec) * 
+                        matrix(nrow=length(midmid), ncol=6, (DEN.SVCP/max(DEN.SVCP)), byrow=T))
+
+IP.SVCP$spp <- "SVCP"
+
+
+
+########################-
+########################-
+########################-
+
+
+
+
+
+out.temp <- out2; out.temp[,1]<-"SVCP"
+out.temp[1:length(midmid), 3] <- exp(log(midmid) * lw.slope + (lw.intercept))
+out2 <- rbind(out2, out.temp)
+
+IP <- rbind(IP.SVCP, IP.BHCP)
+
+out.list <- list("Snot" = out, "MBM" = out2, "IP" = IP)
+return(out.list)
+}
+#R0
+#sppspp="BHCP"
+#max.age=20
