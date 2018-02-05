@@ -1,26 +1,25 @@
   # Specify constants----
   P <- 6 # Number of pools (or discrete locations) to model separately
-  POOLSZ <- c(80, 77, 74, 14, 26, 15, 5) # Recruitment scaled by pool size. Left to right - Alton, La Grange, Peoria, Starved Rock, Marseilles, Dresden, and Brandon Road (river miles)
+  POOLSZ <- c(80, 77, 74, 14, 26, 15, 5) # Recruitment scaled by pool size (river miles). Left to right - Alton, La Grange, Peoria, Starved Rock, Marseilles, Dresden, and Brandon Road (river miles)
   Y <- 25 # Number of years
   I <- 1000 # Number of iterations
   min.sz <- 0 # Min size (mm TL)
   max.sz <- 1200 # Max size (mm TL)
   bin.sz <- 10 # Size class interval (mm)
   setwd("C:/Users/dglover/Documents/Glover/Population models/Illinois River/Simulation") # set working directory
-  species = 2
-  d=1
-  #for (species in 1:2){ # 1 = BHCP, 2 = SVCP
+  
+  for (species in 1:2){ # 1 = BHCP, 2 = SVCP
       if (species==1){SPP <- "BHCP"} else # Determine species to use for loading parameters
           {SPP <- "SVCP"}
-      #for (d in 1:10){
+      for (d in 1:10){
           # specify directory and filename for workspace image to save
-          #mypath = "C:/Users/dglover/Documents/Glover/Population models/Illinois River/Simulation/results/Results with harvest included/Scenarios with recruitment at pools 1,2,3/"
-          #image_id = paste(SPP, "_harvest_only",  sep = "")
-          #image_id = paste(SPP, "_M_deter_", d*10, sep = "")
+          mypath = "C:/Users/dglover/Documents/Glover/Population models/Illinois River/Simulation/results/Results with harvest included/Scenarios with recruitment at pools 1,2,3/"
+          image_id = paste(SPP, "_harvest_only",  sep = "")
+          image_id = paste(SPP, "_M_deter_", d*10, sep = "")
           # Load functions----
           source('funcLoad.R')
           source('funcBins.R')
-          #source('funcGrowth.R') # no need for this function given that growth transition matrix incorporates invidual variability in growth
+          source('funcGrowth.R')
           source('funcMove.R')
           source('funcSnot.R')
           source('funcSSB.R')
