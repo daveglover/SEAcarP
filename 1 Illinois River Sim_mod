@@ -1,5 +1,3 @@
-  options(scipen=999)
-
   # Specify constants----
   P <- 6 # Number of pools (or discrete locations) to model separately
   POOLSZ <- c(80, 77, 74, 14, 26, 15, 5) # Recruitment scaled by pool size. Left to right - Alton, La Grange, Peoria, Starved Rock, Marseilles, Dresden, and Brandon Road (river miles)
