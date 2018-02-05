@@ -1,0 +1,100 @@
+###########################################-
+# HISTOGRAMS OF DIFFERENT FISHING SCENARIOS
+###########################################-
+#year 25 histograms
+sub.data.Dresden <- N[which(N[,3]==6 & N[,2]==25), ] #subset Dresden at year 25
+#sub.data.Marseilles <- N[which(N[,3]==5 & N[,2]==25), ] #subset Marseilles at year 25
+#sub.data.StarvedRock <- N[which(N[,3]==4 & N[,2]==25), ] #subset Starved Rock at year 25
+#sub.data.Peoria <- N[which(N[,3]==3 & N[,2]==25), ] #subset Peoria at year 25
+#sub.data.Lagrange <- N[which(N[,3]==2 & N[,2]==25), ] #subset Lagrange at year 25
+#sub.data.Alton <- N[which(N[,3]==1 & N[,2]==25), ] #subset Alton at year 25
+
+#Relativize by the no-fishing baseline conditions
+rN=sub.data.Dresden
+rN[, 4:ncol(rN)] <- 100*(1-(rN[, 4:ncol(rN)]/rN[ ,4]))
+
+firsttoplot1 = 66#first scenario number to plot based on SCN table; plots 10 scenarios
+h1 = hist(rN[,firsttoplot1+0+3], plot = FALSE, breaks = seq(0, 100, by = 10))
+h1$density = h1$counts#/sum(h1$counts)
+h2 = hist(rN[,firsttoplot1+1+3], plot = FALSE, breaks = seq(0, 100, by = 10))
+h2$density = h2$counts#/sum(h2$counts)
+h3 = hist(rN[,firsttoplot1+2+3], plot = FALSE, breaks = seq(0, 100, by = 10))
+h3$density = h3$counts#/sum(h3$counts)
+h4 = hist(rN[,firsttoplot1+3+3], plot = FALSE, breaks = seq(0, 100, by = 10))
+h4$density = h4$counts#/sum(h4$counts)
+h5 = hist(rN[,firsttoplot1+4+3], plot = FALSE, breaks = seq(0, 100, by = 10))
+h5$density = h5$counts#/sum(h5$counts)
+h6 = hist(rN[,firsttoplot1+5+3], plot = FALSE, breaks = seq(0, 100, by = 10))
+h6$density = h6$counts#/sum(h6$counts)
+
+firsttoplot2 = 56#first scenario number to plot based on SCN table; plots 10 scenarios
+h11 = hist(rN[,firsttoplot2+0+3], plot = FALSE, breaks = seq(0, 100, by = 10))
+h11$density = h11$counts#/sum(h1$counts)
+h12 = hist(rN[,firsttoplot2+1+3], plot = FALSE, breaks = seq(0, 100, by = 10))
+h12$density = h12$counts#/sum(h2$counts)
+h13 = hist(rN[,firsttoplot2+2+3], plot = FALSE, breaks = seq(0, 100, by = 10))
+h13$density = h13$counts#/sum(h3$counts)
+h14 = hist(rN[,firsttoplot2+3+3], plot = FALSE, breaks = seq(0, 100, by = 10))
+h14$density = h14$counts#/sum(h4$counts)
+h15 = hist(rN[,firsttoplot2+4+3], plot = FALSE, breaks = seq(0, 100, by = 10))
+h15$density = h15$counts#/sum(h5$counts)
+h16 = hist(rN[,firsttoplot2+5+3], plot = FALSE, breaks = seq(0, 100, by = 10))
+h16$density = h16$counts#/sum(h6$counts)
+
+firsttoplot3 = 46#first scenario number to plot based on SCN table; plots 10 scenarios
+h21 = hist(rN[,firsttoplot3+0+3], plot = FALSE, breaks = seq(0, 100, by = 10))
+h21$density = h21$counts#/sum(h1$counts)
+h22 = hist(rN[,firsttoplot3+1+3], plot = FALSE, breaks = seq(0, 100, by = 10))
+h22$density = h22$counts#/sum(h2$counts)
+h23 = hist(rN[,firsttoplot3+2+3], plot = FALSE, breaks = seq(0, 100, by = 10))
+h23$density = h23$counts#/sum(h3$counts)
+h24 = hist(rN[,firsttoplot3+3+3], plot = FALSE, breaks = seq(0, 100, by = 10))
+h24$density = h24$counts#/sum(h4$counts)
+h25 = hist(rN[,firsttoplot3+4+3], plot = FALSE, breaks = seq(0, 100, by = 10))
+h25$density = h25$counts#/sum(h5$counts)
+h26 = hist(rN[,firsttoplot3+5+3], plot = FALSE, breaks = seq(0, 100, by = 10))
+h26$density = h26$counts#/sum(h6$counts)
+
+windows(10,7.5)
+par(mfrow=c(3,2))
+par(cex=0.8)
+par(mar = c(3, 3, 1, 1), oma = c(2, 2, 2, 2))
+
+plot(h1, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(0,0,1,1/4))
+mtext("Deter effectiveness = 50%", side = 3, line = -1.5, adj = 0.1, cex = 1)
+par(new=TRUE)
+plot(h11, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(1,0,0,1/4))
+par(new=TRUE)
+plot(h21, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(0,1,0,1/4))
+plot(h4, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(0,0,1,1/4))
+mtext("Deter effectiveness = 80%", side = 3, line = -1.5, adj = 0.1, cex = 1)
+par(new=TRUE)
+plot(h14, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(1,0,0,1/4))
+par(new=TRUE)
+plot(h24, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(0,1,0,1/4))
+plot(h2, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(0,0,1,1/4))
+mtext("Deter effectiveness = 60%", side = 3, line = -1.5, adj = 0.1, cex = 1)
+par(new=TRUE)
+plot(h12, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(1,0,0,1/4))
+par(new=TRUE)
+plot(h22, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(0,1,0,1/4))
+plot(h5, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(0,0,1,1/4))
+mtext("Deter effectiveness = 90%", side = 3, line = -1.5, adj = 0.1, cex = 1)
+mtext("Percent effectiveness", side = 1, adj = 0.5, outer = TRUE, cex=1.2)
+par(new=TRUE)
+plot(h15, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(1,0,0,1/4))
+par(new=TRUE)
+plot(h25, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(0,1,0,1/4))
+plot(h3, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(0,0,1,1/4))
+mtext("Deter effectiveness = 70%", side = 3, line = -1.5, adj = 0.1, cex = 1)
+mtext("Number of simulations", side = 2, padj = 0.5, adj = 0.5, outer = TRUE, cex = 1.2)
+par(new=TRUE)
+plot(h13, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(1,0,0,1/4))
+par(new=TRUE)
+plot(h23, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(0,1,0,1/4))
+plot(h6, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(0,0,1,1/4))
+mtext("Deter effectiveness = 100%", side = 3, line = -1.5, adj = 0.1, cex = 1)
+par(new=TRUE)
+plot(h16, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(1,0,0,1/4))
+par(new=TRUE)
+plot(h26, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(0,1,0,1/4))
