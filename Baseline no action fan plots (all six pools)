@@ -1,0 +1,60 @@
+###########################################-
+# FAN PLOT OF BASELINE, NO ACTION, SCENARIO
+###########################################-
+library(fanplot)
+
+sub.data.Dresden <- N[which(N[,3]==6), ] #subset Dresden
+sub.data.Marseilles <- N[which(N[,3]==5), ] #subset Marseilles
+sub.data.StarvedRock <- N[which(N[,3]==4), ] #subset Starved Rock
+sub.data.Peoria <- N[which(N[,3]==3), ] #subset Peoria
+sub.data.Lagrange <- N[which(N[,3]==2), ] #subset Lagrange
+sub.data.Alton <- N[which(N[,3]==1), ] #subset Alton
+
+Alton <- matrix(nrow=I, ncol=Y+1, byrow=TRUE)
+Lagrange <- matrix(nrow=I, ncol=Y+1, byrow=TRUE)
+Peoria <- matrix(nrow=I, ncol=Y+1, byrow=TRUE)
+StarvedRock <- matrix(nrow=I, ncol=Y+1, byrow=TRUE)
+Marseilles <- matrix(nrow=I, ncol=Y+1, byrow=TRUE)
+Dresden <- matrix(nrow=I, ncol=Y+1, byrow=TRUE)
+
+for (r in 1:I){
+  for (c in 1:(Y+1)){
+    Alton[r,c] = sub.data.Alton[(which(sub.data.Alton[,1]==r & sub.data.Alton[,2]==(c-1))),4]
+    Lagrange[r,c] = sub.data.Lagrange[(which(sub.data.Lagrange[,1]==r & sub.data.Lagrange[,2]==(c-1))),4]
+    Peoria[r,c] = sub.data.Peoria[(which(sub.data.Peoria[,1]==r & sub.data.Peoria[,2]==(c-1))),4]
+    StarvedRock[r,c] = sub.data.StarvedRock[(which(sub.data.StarvedRock[,1]==r & sub.data.StarvedRock[,2]==(c-1))),4]
+    Marseilles[r,c] = sub.data.Marseilles[(which(sub.data.Marseilles[,1]==r & sub.data.Marseilles[,2]==(c-1))),4]
+    Dresden[r,c] = sub.data.Dresden[(which(sub.data.Dresden[,1]==r & sub.data.Dresden[,2]==(c-1))),4]
+  }
+}
+
+windows(11, 8.5)
+par(mfrow = c(2, 3)) #row, column
+par(cex = 0.8)
+par(mar = c(3, 3, 0, 0), oma = c(1, 1, 1, 1))
+
+plot(NULL, xlim = c(1, 27), ylim = c(0, quantile(Dresden, probs = 0.997)))
+mtext("Dresden", side = 3, line = -1.5, adj = 0.1, cex = 1)
+fan(data = Dresden, type = "interval", start = 0, llab=FALSE, rcex=0.8)
+
+plot(NULL, xlim = c(1, 27), ylim = c(0, quantile(Marseilles, probs = 0.997)))
+mtext("Marseilles", side = 3, line = -1.5, adj = 0.1, cex = 1)
+fan(data = Marseilles, type = "interval", start = 0, llab=FALSE, rcex=0.8)
+
+plot(NULL, xlim = c(1, 27), ylim = c(0, quantile(StarvedRock, probs = 0.997)))
+mtext("Starved Rock", side = 3, line = -1.5, adj = 0.1, cex = 1)
+fan(data = StarvedRock, type = "interval", start = 0, llab=FALSE, rcex=0.8)
+
+plot(NULL, xlim = c(1, 27), ylim = c(0, quantile(Peoria, probs = 0.997)))
+mtext("Peoria", side = 3, line = -1.5, adj = 0.1, cex = 1)
+mtext("Relative abundance", side = 2, padj = 1, adj = 0.5, outer = TRUE)
+fan(data = Peoria, type = "interval", start = 0, llab=FALSE, rcex=0.8)
+
+plot(NULL, xlim = c(1, 27), ylim = c(0, quantile(Lagrange, probs = 0.997)))
+mtext("LaGrange", side = 3, line = -1.5, adj = 0.1, cex = 1)
+mtext("Time (years)", side = 1, adj = 0.5, outer = TRUE)
+fan(data = Lagrange, type = "interval", start = 0, llab=FALSE, rcex=0.8)
+
+plot(NULL, xlim = c(1, 27), ylim = c(0, quantile(Alton, probs = 0.997)))
+mtext("Alton", side = 3, line = -1.5, adj = 0.1, cex = 1)
+fan(data = Alton, type = "interval", start = 0, llab=FALSE, rcex=0.8)
