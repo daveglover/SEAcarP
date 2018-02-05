@@ -7,7 +7,7 @@
 
 ### FUNCTION INPUTS ###
 # vonb refers to a set of von bertalanffy growth parameters (randomly drawn in the simulation)
-### bins...actual values for the bins (output of funcBins.r)
+### bins...actual values for the length bins (output of funcBins.r)
 ### lmids...midpoint values of the length bins (output of funcBins.r)
 
 
