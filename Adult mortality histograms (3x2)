@@ -1,0 +1,134 @@
+###########################################-
+# HISTOGRAMS OF DIFFERENT FISHING SCENARIOS
+###########################################-
+#year 25 histograms
+#library(jpeg)
+plot_name = "sr_deterence"
+sets <- 1 # number of sets of histograms that will be overlayed (1 to 3)
+mypath <- file.path("C:","Users", "dglover", "Documents", "Glover", "Population models", "Illinois River", "Simulation", paste("test_", plot_name, ".jpg", sep = "")) #file path to save jpg figure
+interval <- 10 #number of intervals from 0 to 100 for histogram
+sub.data.Dresden <- N[which(N[,3]==6 & N[,2]==25), ] #subset Dresden at year 25
+#sub.data.Marseilles <- N[which(N[,3]==5 & N[,2]==25), ] #subset Marseilles at year 25
+#sub.data.StarvedRock <- N[which(N[,3]==4 & N[,2]==25), ] #subset Starved Rock at year 25
+#sub.data.Peoria <- N[which(N[,3]==3 & N[,2]==25), ] #subset Peoria at year 25
+#sub.data.Lagrange <- N[which(N[,3]==2 & N[,2]==25), ] #subset Lagrange at year 25
+#sub.data.Alton <- N[which(N[,3]==1 & N[,2]==25), ] #subset Alton at year 25
+
+#Relativize by the no-fishing baseline conditions
+rN=sub.data.Dresden
+rN[, 4:ncol(rN)] <- 100*(1-(rN[, 4:ncol(rN)]/rN[ ,4]))
+
+firsttoplot = 2#first scenario number to plot based on SCN table; plots 6 scenarios
+  h1 = hist(rN[,firsttoplot+0+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h1$density = h1$counts#/sum(h1$counts)
+  h2 = hist(rN[,firsttoplot+1+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h2$density = h2$counts#/sum(h2$counts)
+  h3 = hist(rN[,firsttoplot+2+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h3$density = h3$counts#/sum(h3$counts)
+  h4 = hist(rN[,firsttoplot+3+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h4$density = h4$counts#/sum(h4$counts)
+  h5 = hist(rN[,firsttoplot+4+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h5$density = h5$counts#/sum(h5$counts)
+  h6 = hist(rN[,firsttoplot+5+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h6$density = h6$counts#/sum(h6$counts)
+  h7 = hist(rN[,firsttoplot+2+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h7$density = h7$counts#/sum(h3$counts)
+  h8 = hist(rN[,firsttoplot+3+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h8$density = h8$counts#/sum(h4$counts)
+  h9 = hist(rN[,firsttoplot+4+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h9$density = h9$counts#/sum(h5$counts)
+  h10 = hist(rN[,firsttoplot+5+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h10$density = h10$counts#/sum(h6$counts)
+
+if (sets == 2){
+  firsttoplot = 12#first scenario number to plot based on SCN table; plots 6 scenarios
+  h11 = hist(rN[,firsttoplot+0+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h11$density = h11$counts#/sum(h1$counts)
+  h12 = hist(rN[,firsttoplot+1+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h12$density = h12$counts#/sum(h2$counts)
+  h13 = hist(rN[,firsttoplot+2+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h13$density = h13$counts#/sum(h3$counts)
+  h14 = hist(rN[,firsttoplot+3+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h14$density = h14$counts#/sum(h4$counts)
+  h15 = hist(rN[,firsttoplot+4+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h15$density = h15$counts#/sum(h5$counts)
+  h16 = hist(rN[,firsttoplot+5+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h16$density = h16$counts#/sum(h6$counts)
+  h17 = hist(rN[,firsttoplot+2+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h17$density = h17$counts#/sum(h3$counts)
+  h18 = hist(rN[,firsttoplot+3+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h18$density = h18$counts#/sum(h4$counts)
+  h19 = hist(rN[,firsttoplot+4+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h19$density = h19$counts#/sum(h5$counts)
+  h20 = hist(rN[,firsttoplot+5+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h20$density = h20$counts}#/sum(h6$counts)
+
+if (sets == 3){
+  firsttoplot = 22#first scenario number to plot based on SCN table; plots 6 scenarios
+  h21 = hist(rN[,firsttoplot+0+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h21$density = h21$counts#/sum(h1$counts)
+  h22 = hist(rN[,firsttoplot+1+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h22$density = h22$counts#/sum(h2$counts)
+  h23 = hist(rN[,firsttoplot+2+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h23$density = h23$counts#/sum(h3$counts)
+  h24 = hist(rN[,firsttoplot+3+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h24$density = h24$counts#/sum(h4$counts)
+  h25 = hist(rN[,firsttoplot+4+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h25$density = h25$counts#/sum(h5$counts)
+  h26 = hist(rN[,firsttoplot+5+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h26$density = h26$counts#/sum(h6$counts)
+  h27 = hist(rN[,firsttoplot+2+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h27$density = h27$counts#/sum(h3$counts)
+  h28 = hist(rN[,firsttoplot+3+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h28$density = h28$counts#/sum(h4$counts)
+  h29 = hist(rN[,firsttoplot+4+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h29$density = h29$counts#/sum(h5$counts)
+  h30 = hist(rN[,firsttoplot+5+3], plot = FALSE, breaks = seq(0, 100, by = interval))
+  h30$density = h30$counts}#/sum(h6$counts)
+
+
+  jpeg(filename=mypath, width = 8.3, height = 6.25, units = "in", res = 144)
+  #windows(8.3,6.25)
+  par(mfrow=c(3,2))
+  par(cex=0.8)
+  par(mar = c(3, 3, 1, 1), oma = c(2, 2, 2, 2))
+  
+  plot(h1, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(0,0,1,1/4))
+  if (sets == 2) {par(new=TRUE)
+  plot(h11, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(1,0,0,1/4))}
+  if (sets == 3) {par(new=TRUE)
+    plot(h21, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(0,1,0,1/4))}
+  
+  plot(h4, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(0,0,1,1/4))
+  if (sets == 2) {par(new=TRUE)
+  plot(h14, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(1,0,0,1/4))}
+  if (sets == 3) {par(new=TRUE)
+    plot(h24, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(0,1,0,1/4))}
+  
+  plot(h2, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(0,0,1,1/4))
+  if (sets == 2) {par(new=TRUE)
+  plot(h12, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(1,0,0,1/4))}
+  if (sets == 3) {par(new=TRUE)
+    plot(h22, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(0,1,0,1/4))}
+  
+  plot(h5, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(0,0,1,1/4))
+  mtext("Percent effectiveness", side = 1, adj = 0.5, outer = TRUE, cex=1.2)
+  if (sets == 2) {par(new=TRUE)
+  plot(h15, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(1,0,0,1/4))}
+  if (sets == 3) {par(new=TRUE)
+    plot(h25, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(0,1,0,1/4))}
+  
+  plot(h3, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(0,0,1,1/4))
+  mtext("Number of simulations", side = 2, padj = 0.5, adj = 0.5, outer = TRUE, cex = 1.2)
+  if (sets == 2) {par(new=TRUE)
+  plot(h13, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(1,0,0,1/4))}
+  if (sets == 3) {par(new=TRUE)
+    plot(h23, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(0,1,0,1/4))}
+  
+  plot(h6, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(0,0,1,1/4))
+  if (sets == 2) {par(new=TRUE)
+  plot(h16, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(1,0,0,1/4))}
+  if (sets == 3) {par(new=TRUE)
+    plot(h26, ylim = range(c(0,I)), xlim = range(c(0, 100)), freq=FALSE, main = "", col = rgb(0,1,0,1/4))}
+  
+  dev.off()
